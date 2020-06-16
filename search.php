@@ -1,51 +1,42 @@
-<?php
-/**
- * The template for displaying search results pages
- *
- * @link https://developer.wordpress.org/themes/basics/template-hierarchy/#search-result
- *
- * @package Elegant_Magazine
- */
+<?php 
+    
+    get_header(); 
+    $cb_global_color = ot_get_option('cb_base_color', '#eb9812'); 
+    $cb_theme_style = ot_get_option('cb_theme_style', 'cb_boxed'); 
+?>
 
-get_header(); ?>
+<div class="cb-cat-header<?php if ($cb_theme_style == 'cb_boxed') echo ' wrap'; ?>" style="border-bottom-color:<?php echo $cb_global_color;?>;">
+    <h1 id="cb-search-title"><?php _e('Search Results for:', 'cubell'); ?> <span style="color:<?php echo $cb_global_color; ?>">"<?php echo esc_attr(get_search_query()); ?>"</span></h1>
+</div>
+            
+<div id="cb-content" class="cb-search-page wrap clearfix">
+    
 
-	<section id="primary" class="content-area">
-		<main id="main" class="site-main">
+    <div id="main" class="clearfix" role="main">
+       
+    <?php if (have_posts()) { 
+    
+                            get_template_part('cat', 'style-b');
+    
+        } else { ?>
+    
+            <article id="post-not-found" class="hentry clearfix">
+                    <h2><?php _e('Sorry, nothing found.', 'cubell'); ?></h2>
+                
+                <section class="entry-content">
+                    <p><?php _e('Please try searching again, but with different keywords.', 'cubell'); ?></p>
+                </section>
+                <footer class="article-footer">
+                    <p><?php get_search_form(); ?></p>
+                </footer>
+            </article>
+    
+        <?php } ?>
+        
+    </div> <!-- end #main -->
 
-		<?php
-		if ( have_posts() ) : ?>
-
-			<header class="header-title-wrapper">
-				<h1 class="page-title"><?php
-					/* translators: %s: search query. */
-					printf( esc_html__( 'Search Results for: %s', 'elegant-magazine' ), '<span>' . get_search_query() . '</span>' );
-				?></h1>
-			</header><!-- .header-title-wrapper -->
-
-			<?php
-			/* Start the Loop */
-			while ( have_posts() ) : the_post();
-
-				/**
-				 * Run the loop for the search to output the results.
-				 * If you want to overload this in a child theme then include a file
-				 * called content-search.php and that will be used instead.
-				 */
-				get_template_part( 'template-parts/content', 'search' );
-
-			endwhile;
-
-			the_posts_navigation();
-
-		else :
-
-			get_template_part( 'template-parts/content', 'none' );
-
-		endif; ?>
-
-		</main><!-- #main -->
-	</section><!-- #primary -->
-
-<?php
-get_sidebar();
-get_footer();
+    <?php get_sidebar(); ?>
+    
+</div> <!-- end #cb-inner-content -->
+                
+<?php get_footer(); ?>

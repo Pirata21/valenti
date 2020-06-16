@@ -1,56 +1,49 @@
 <?php
-/**
- * The main template file
- *
- * This is the most generic template file in a WordPress theme
- * and one of the two required files for a theme (the other being style.css).
- * It is used to display a page when nothing more specific matches a query.
- * E.g., it puts together the home page when no home.php file exists.
- *
- * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
- *
- * @package Elegant_Magazine
- */
+    get_header();
+    $cb_full_feature = ot_get_option( 'cb_hp_gridslider', 'cb_full_off' );
+    $cb_blog_style = ot_get_option( 'cb_blog_style', 'style-a' );
+    $cb_full_feature_cats = ot_get_option( 'cb_gridslider_category', '' );
 
-get_header(); ?>
+    if ( $cb_blog_style == 'style-c' ) {
 
-	<div id="primary" class="content-area">
-		<main id="main" class="site-main">
+        $cb_blog_width = 'cb-full-width';
 
-		<?php
-		if ( have_posts() ) :
+    } else {
 
-			if ( is_home() && ! is_front_page() ) : ?>
-				<header>
-					<h1 class="page-title screen-reader-text"><?php single_post_title(); ?></h1>
-				</header>
+        $cb_blog_width = 'cb-standard';
+    }
+?>
 
-			<?php
-			endif;
+<div id="cb-content" class="wrap clearfix">
 
-			/* Start the Loop */
-			while ( have_posts() ) : the_post();
+    <?php if ( $cb_full_feature != 'cb_full_off' ) {
 
-				/*
-				 * Include the Post-Format-specific template for the content.
-				 * If you want to override this in a child theme, then include a file
-				 * called content-___.php (where ___ is the Post Format name) and that will be used instead.
-				 */
-				get_template_part( 'template-parts/content', get_post_format() );
+        if ( $cb_full_feature == 's-2' ) {
+            echo '<div id="main" class="' . $cb_blog_width .' clearfix" role="main">';
+            $cb_section = 'b';
+        } else {
+            $cb_section = 'a';
+        }
 
-			endwhile;
+                    $cb_flipped = $cb_title = $cb_module_style = $cb_offset = $cb_order = $cb_orderby = $cb_filter = $cb_tag_id = $cb_post_ids = NULL;
+                    $j = 0;
+                    if ( $cb_full_feature_cats == NULL ) {
+                         $cb_full_feature_cats = get_all_category_ids();
+                    }
+                    $cb_cat_id = implode( ',', $cb_full_feature_cats );
+                    include( locate_template( 'library/modules/cb-' . $cb_full_feature . '.php' ) );
+     } ?>
 
-			the_posts_navigation();
+    <?php  if ( $cb_full_feature != 's-2' ) { ?>
+        <div id="main" class="<?php echo $cb_blog_width; ?> clearfix" role="main">
+    <?php } ?>
 
-		else :
+      <?php get_template_part( 'cat', $cb_blog_style ); ?>
 
-			get_template_part( 'template-parts/content', 'none' );
+    </div> <!-- end #main -->
 
-		endif; ?>
+    <?php if ( $cb_blog_style != 'style-c' ) { get_sidebar(); } ?>
 
-		</main><!-- #main -->
-	</div><!-- #primary -->
+</div> <!-- end #cb-content -->
 
-<?php
-    get_sidebar();
-    get_footer();
+<?php get_footer(); ?>

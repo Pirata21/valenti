@@ -1,72 +1,98 @@
-<?php
-/**
- * The template for displaying comments
- *
- * This is the template that displays the area of the page that contains both the current comments
- * and the comment form.
- *
- * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
- *
- * @package Elegant_Magazine
- */
+<?php /* Comments page */
+    $cb_commenter = wp_get_current_commenter();
+    $cb_require_name_email = get_option( 'require_name_email' );
+    $cb_require_aria = ( $cb_require_name_email ? " aria-required='true'" : '' );
 
-/*
- * If the current post is protected by a password and
- * the visitor has not yet entered the password we will
- * return early without loading the comments.
- */
-if ( post_password_required() ) {
-	return;
-}
+  if ( !empty($_SERVER['SCRIPT_FILENAME']) && 'comments.php' == basename($_SERVER['SCRIPT_FILENAME']) )
+    die ('Please do not load this page directly. Thanks!');
+
+  if ( post_password_required() ) { ?>
+    <div class="alert help">
+        <p class="nocomments"><?php _e( "This post is password protected. Enter the password to view comments.", "cubell" ); ?></p>
+    </div>
+  <?php
+    return;
+  }
 ?>
 
-<div id="comments" class="comments-area">
+<?php if ( have_comments() ) : ?>
 
-	<?php
-	// You can start editing here -- including this comment!
-	if ( have_comments() ) : ?>
-		<h2 class="comments-title">
-			<?php
-			$comment_count = get_comments_number();
-			if ( 1 === $comment_count ) {
-				printf(
-					/* translators: 1: title. */
-					esc_html_e( 'One thought on &ldquo;%1$s&rdquo;', 'elegant-magazine' ),
-					'<span>' . get_the_title() . '</span>'
-				);
-			} else {
-				printf( // WPCS: XSS OK.
-					/* translators: 1: comment count number, 2: title. */
-					esc_html( _nx( '%1$s thought on &ldquo;%2$s&rdquo;', '%1$s thoughts on &ldquo;%2$s&rdquo;', $comment_count, 'comments title', 'elegant-magazine' ) ),
-					number_format_i18n( $comment_count ),
-					'<span>' . get_the_title() . '</span>'
-				);
-			}
-			?>
-		</h2><!-- .comments-title -->
+    <h3 id="comments" class="cb-block-title"><?php comments_number(__( 'No Responses', 'cubell' ), __( 'One Response', 'cubell' ), _n( '% Response', '% Responses', get_comments_number(),'cubell') );?></h3>
 
-		<?php the_comments_navigation(); ?>
+    <nav id="comment-nav">
+        <ul class="clearfix">
+            <li><?php previous_comments_link() ?></li>
+            <li><?php next_comments_link() ?></li>
+        </ul>
+    </nav>
+    
+    <ol class="commentlist">
+        <?php wp_list_comments('type=comment&callback=cb_comments&max_depth=3'); ?>
+    </ol>
+    
+    <nav id="comment-nav">
+        <ul class="clearfix">
+            <li><?php previous_comments_link() ?></li>
+            <li><?php next_comments_link() ?></li>
+        </ul>
+    </nav>    
 
-		<ol class="comment-list">
-			<?php
-				wp_list_comments( array(
-					'style'      => 'ol',
-					'short_ping' => true,
-				) );
-			?>
-		</ol><!-- .comment-list -->
+<?php endif; ?>
 
-		<?php the_comments_navigation();
+<?php if ( comments_open() ) : ?>
 
-		// If comments are closed and there are comments, let's leave a little note, shall we?
-		if ( ! comments_open() ) : ?>
-			<p class="no-comments"><?php esc_html_e( 'Comments are closed.', 'elegant-magazine' ); ?></p>
-		<?php
-		endif;
 
-	endif; // Check for have_comments().
+<?php comment_form(
+                    array(
+                                'title_reply' => __( 'Leave a Reply', 'cubell'),
+                                'title_reply_to' =>  __( 'Leave a Reply to %s', 'cubell' ),
+                                'cancel_reply_link' => __( 'Cancel Reply', 'cubell' ),
+                                'label_submit' => __( 'Submit', 'cubell' ),
+                                'comment_notes_after' => '',
+                                'comment_notes_before' => '<p class="comment-notes">' . __( 'Your email address will not be published.', 'cubell') .'</p>',
+                                'comment_field' =>  '<p class="comment-form-comment"><label for="comment">' . __( 'Comment', 'cubell' ) .
+                                '</label><textarea id="comment" name="comment" cols="45" rows="8" aria-required="true">' .
+                                '</textarea></p>',
+                            
+                                'must_log_in' => '<p class="must-log-in">' .
+                                                    sprintf(
+                                                      __( 'You must be <a href="%s" data-reveal-id="cb-login-modal">logged in</a> to post a comment.', 'cubell' ),
+                                                      wp_login_url( apply_filters( 'the_permalink', get_permalink() ) )
+                                                    ) . '</p>',
+       
+                                 'logged_in_as' => '<p class="logged-in-as">' .
+                                                    sprintf(
+                                                    __( 'Logged in as <a href="%1$s">%2$s</a>. <a href="%3$s" title="Log out of this account">Log out?</a>', 'cubell' ),
+                                                      admin_url( 'profile.php' ),
+                                                      $user_identity,
+                                                      wp_logout_url( apply_filters( 'the_permalink', get_permalink( ) ) )
+                                                    ) . '</p>',
+                                
+                                  'fields' => apply_filters( 'comment_form_default_fields', array(
 
-	comment_form();
-	?>
+                                            'author' =>
+                                              '<p class="comment-form-author">' .
+                                              '<label for="author">' . __( 'Name', 'cubell' ) . 
+                                              ( $cb_require_name_email ? '<span class="required">*</span>' : '' ) . '</label> ' .
+                                              '<input id="author" name="author" type="text" value="' . esc_attr( $cb_commenter['comment_author'] ) .
+                                              '" size="30"' . $cb_require_aria . ' /></p>',
+                                        
+                                            'email' =>
+                                              '<p class="comment-form-email"><label for="email">' . __( 'Email', 'cubell' ) . 
+                                              ( $cb_require_name_email ? '<span class="required">*</span>' : '' ) . '</label> ' .
+                                              '<input id="email" name="email" type="text" value="' . esc_attr(  $cb_commenter['comment_author_email'] ) .
+                                              '" size="30"' . $cb_require_aria . ' /></p>',
+                                        
+                                            'url' =>
+                                              '<p class="comment-form-url"><label for="url">' .
+                                              __( 'Website', 'cubell' ) . '</label>' .
+                                              '<input id="url" name="url" type="text" value="' . esc_attr( $cb_commenter['comment_author_url'] ) .
+                                              '" size="30" /></p>'
+                                        )
+                            ),
+                )
+    ); 
 
-</div><!-- #comments -->
+endif;
+
+?>
