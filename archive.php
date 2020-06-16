@@ -1,41 +1,54 @@
-<?php 
-            get_header(); 
-            $cb_global_color = ot_get_option('cb_base_color', '#eb9812'); 
-            $cb_theme_style = ot_get_option('cb_theme_style', 'cb_boxed');
-?>
- 
-<div class="cb-cat-header<?php if ($cb_theme_style == 'cb_boxed') echo ' wrap'; ?>" style="border-bottom-color:<?php echo $cb_global_color; ?>;">
-     <?php if (is_day()) { ?>
-            <h1 id="cb-cat-title">
-                <span><?php _e("Daily Archives", "cubell"); ?> <i class="icon-long-arrow-right"></i></span> <?php the_time(get_option('date_format')); ?>
-            </h1>
+<?php
+/**
+ * The template for displaying archive pages
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
+ *
+ * @package Elegant_Magazine
+ */
 
-        <?php } elseif (is_month()) { ?>
-            <h1 id="cb-cat-title">
-                <span><?php _e("Monthly Archives", "cubell"); ?> <i class="icon-long-arrow-right"></i></span> <?php the_time(get_option('date_format')); ?>
-            </h1>
-    
-        <?php } elseif (is_year()) { ?>
-            <h1 id="cb-cat-title">
-                <span><?php _e("Yearly Archives", "cubell"); ?> <i class="icon-long-arrow-right"></i></span> <?php the_time(get_option('date_format')); ?>
-            </h1>
-        <?php } ?>
-</div>
-    
-<div id="cb-content" class="wrap clearfix">
-    
-    
-    <div id="main" class="clearfix" role="main">
+get_header(); ?>
 
-	   	<?php if (have_posts()) { 
-	
-							get_template_part('cat', 'style-a');
-			 } ?>
+    <div id="primary" class="content-area">
+        <main id="main" class="site-main">
 
-	</div> <!-- end #main -->
+            <?php
+            if (have_posts()) : ?>
 
-	<?php get_sidebar(); ?>
+                <header class="header-title-wrapper">
+                    <?php
+                    the_archive_title('<h1 class="page-title">', '</h1>');
+                    the_archive_description('<div class="archive-description">', '</div>');
+                    ?>
+                </header><!-- .header-title-wrapper -->
 
-</div> <!-- end #cb-content -->
+                <?php
+                /* Start the Loop */
+                while (have_posts()) : the_post();
 
-<?php get_footer(); ?>
+                    /*
+                     * Include the Post-Format-specific template for the content.
+                     * If you want to override this in a child theme, then include a file
+                     * called content-___.php (where ___ is the Post Format name) and that will be used instead.
+                     */
+                    get_template_part('template-parts/content', get_post_format());
+
+                endwhile; ?>
+                <div class="col col-ten">
+                    <?php the_posts_navigation(); ?>
+                </div>
+            <?php
+
+            else :
+
+                get_template_part('template-parts/content', 'none');
+
+            endif; ?>
+
+        </main><!-- #main -->
+    </div><!-- #primary -->
+
+<?php
+
+get_sidebar();
+get_footer();
